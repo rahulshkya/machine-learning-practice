@@ -1,0 +1,20 @@
+gsap.from("h1",
+    {
+        opacity:0,
+        duration:2,
+        y:20,
+        delay:0.5,
+         stagger:0.4
+        // #ek ek krke heding ko chalane ka kaam
+    }
+)
+gsap.to("#box",
+    {
+        x:800,
+        duration:2,
+        delay:0.5,
+        rotate:360,
+        repeat:1,
+        yoyo:true
+    }
+)
