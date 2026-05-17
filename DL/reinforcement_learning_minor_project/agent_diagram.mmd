@@ -1,0 +1,43 @@
+flowchart LR
+  P[parameters.yaml] --> Init[Agent.__init__\n(load hyperparams to self.*)]
+  Init --> AgentObj[Agent instance]
+  AgentObj --> Run[run(is_training, render)]
+  Run --> Env[Gym Env init (FlappyBird-v0)]
+  Run --> Policy[DQN policy_dqn]
+  Run -->|if training| Replay[ReplayMemory]
+  Run -->|if training| Target[target_dqn (copy of policy_dqn)]
+  Run --> EpisodeLoop[Episode loop]
+
+  EpisodeLoop --> State[state (env.reset / tensor)]
+  State --> ActionSel{Action selection}
+  ActionSel -->|explore (rand < eps)| RandA[env.action_space.sample()]
+  ActionSel -->|exploit| NetA[policy_dqn(state) -> argmax]
+  RandA --> EnvStep[env.step(action)]
+  NetA --> EnvStep
+  EnvStep --> Next[next_state, reward, done]
+  Next --> ToTensor[next_state/reward -> tensors]
+  ToTensor -->|if training| Append[Replay.append((s,a,r,s',done))]
+  Append --> MemoryLenCheck{len(memory) > minibatch_size}
+  MemoryLenCheck -->|yes| Sample[mini_batch = memory.sample(minibatch_size)]
+  Sample --> Optimize[optimize(mini_batch, policy_dqn, target_dqn)]
+
+  Optimize -->|compute target using| Target
+  Optimize -->|compute current using| Policy
+  Optimize -->|backprop -> update| Policy
+
+  EpisodeLoop -->|periodic| Sync[target_dqn <- policy_dqn (every network_sync_rate)]
+  EpisodeLoop -->|if new best| Save[torch.save(policy_dqn.state_dict())]
+
+  subgraph CLI
+    Main[__main__ argparser] --> Create[Agent(param_set)]
+    Create -->|--train| RunTrain[run(is_training=True)]
+    Create -->|--eval| RunEval[run(is_training=False, render=True)]
+  end
+
+  style P fill:#f9f,stroke:#333,stroke-width:1px
+  style Policy fill:#bbf
+  style Target fill:#bbf
+  style Replay fill:#ffd
+  style Optimize fill:#fdd
+  style Env fill:#dfd
+  style CLI fill:#eee
