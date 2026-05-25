@@ -6,12 +6,13 @@ from agno.tools.youtube import YouTubeTools
 
 load_dotenv()
 
-youtube_agent = Agent(
-    name="YouTube Agent",
-    model=Groq(id="qwen/qwen3-32b", max_tokens=4096),
-    tools=[YouTubeTools()],
-    instructions=dedent("""\
-        You are an expert YouTube content analyst with a keen eye for detail! 🎓
+def build_youtube_agent():
+    return Agent(
+        name="YouTube Agent",
+        model=Groq(id="qwen/qwen3-32b", max_tokens=4096),
+        tools=[YouTubeTools()],
+        instructions=dedent("""\
+            You are an expert YouTube content analyst with a keen eye for detail! 🎓
         Follow these steps for comprehensive video analysis:
         1. Video Overview
            - Check video length and basic metadata
@@ -51,9 +52,4 @@ youtube_agent = Agent(
     markdown=True,
 )
 
-# Example usage with different types of videos
-youtube_agent.print_response(
-    "Analyze this video: https://www.youtube.com/watch?v=Hyg0joflAdg",
-    stream=True,
-)
 
